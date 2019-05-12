@@ -31,7 +31,7 @@
 #include "structs.hpp"
 
 
-static std::vector<std::string> acceptedDevices{"CPU", "GPU", "MYRIAD", "HETERO:FPGA,CPU"};
+static std::vector<std::string> acceptedDevices{"CPU", "GPU", "MYRIAD", "HETERO:FPGA,CPU", "HETERO:HDDL,CPU"};
 
 std::map<int, std::string> workerNames;
 std::string conf_workersFile;
@@ -47,7 +47,7 @@ bool loop = false;
 const cv::String keys = 
     "{help h        |   | prints this message}"
     "{m model       |   |  Path to an .xml file with a trained model}"
-    "{d device      |   | Specify the target device to infer on; CPU, GPU or MYRIAD is acceptable. Application "
+    "{d device      |   | Specify the target device to infer on; CPU, GPU, MYRIAD, HDDL or FPGA is acceptable. Application "
                                 "will look for a suitable plugin for device specified (CPU by default)}"
     "{c config      |   | Path to config file}"
     "{db database   |   | Path to workers file}"

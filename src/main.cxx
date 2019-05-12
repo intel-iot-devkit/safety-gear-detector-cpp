@@ -385,7 +385,6 @@ int main(int argc, char const *argv[])
         noMoreData.push_back(false);
         cv::namedWindow(i.name, cv::WINDOW_NORMAL);
     }
-
     waitTime = 1000 / (minFPS * videos.size());  
     std::chrono::high_resolution_clock::time_point loop_start_time = std::chrono::high_resolution_clock::now();
     Video *prevVideo;
@@ -403,12 +402,12 @@ int main(int argc, char const *argv[])
             if(currImg.empty())
             {
                 noMoreData[index] = true;
-		++index;
-		cv::Mat messageWindow = cv::Mat(currVideo.height, currVideo.width, CV_8UC1, cv::Scalar(0));
-		std::string message = "Video stream from " + currVideo.name + " has ended!";
-		cv::putText(messageWindow, message, cv::Point(160, currVideo.height/2), 
-				    cv::FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1);
-		cv::imshow(currVideo.name, messageWindow);
+                ++index;
+                cv::Mat messageWindow = cv::Mat(currVideo.height, currVideo.width, CV_8UC1, cv::Scalar(0));
+                std::string message = "Video stream from " + currVideo.name + " has ended!";
+                cv::putText(messageWindow, message, cv::Point(160, currVideo.height/2),
+				cv::FONT_HERSHEY_COMPLEX, 0.5, (255, 255, 255), 1);
+                cv::imshow(currVideo.name, messageWindow);
                 continue;
             }
 
@@ -425,7 +424,7 @@ int main(int argc, char const *argv[])
             if (net.stsCd == net.statusCodeOK) {
                 // Get inference results
                 float *results = net.inference();
-                
+
                 // Detected objects in the current frame
                 std::vector<workerAttr> inFrameWorkers;
 
@@ -475,9 +474,11 @@ int main(int argc, char const *argv[])
                 cv::imshow((*prevVideo).name, prevImg);
                 loop_start_time = std::chrono::high_resolution_clock::now();
                 (*prevVideo).loop_start_time = std::chrono::high_resolution_clock::now();
-                
+
                 // Press Esc to exit the application 
                 if (cv::waitKey(waitTime) == 27) {
+                    net.currInfReq = NULL;
+                    net.nextInfReq = NULL;
                     return 0;
                 }
             }
@@ -506,6 +507,8 @@ int main(int argc, char const *argv[])
 	if (find(noMoreData.begin(), noMoreData.end(), false) == noMoreData.end())
             break;
     }
+    net.currInfReq = NULL;
+    net.nextInfReq = NULL;
     cv::destroyAllWindows();
     return 0;
 }

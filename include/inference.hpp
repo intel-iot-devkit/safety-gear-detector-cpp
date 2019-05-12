@@ -34,15 +34,23 @@ class Network
 {
     size_t modelWidth;
     size_t modelHeight;
+    size_t modelChannels;
     size_t conf_batchSize;
-    InferenceEngine::InferRequest::Ptr currInfReq;
-    InferenceEngine::InferRequest::Ptr nextInfReq;
- 
+
     public:
         int maxProposalCount;
         InferenceEngine::InputsDataMap *inputInfo;
+        int channelSize;
+        int inputSize;
         std::string outputName;
         int objectSize;
+        InferenceEngine::InferRequest::Ptr currInfReq;
+        InferenceEngine::InferRequest::Ptr nextInfReq;
+        InferenceEngine::SizeVector inputDims;
+        InferenceEngine::SizeVector outputDims;
+        InferenceEngine::CNNNetReader networkReader;
+        InferenceEngine::InferencePlugin plugin;
+        InferenceEngine::ExecutableNetwork network;
         InferenceEngine::StatusCode stsCd;
         InferenceEngine::StatusCode statusCodeOK;
         Network();

@@ -20,14 +20,14 @@
 * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-
+#include<iostream>
 #include <string>
 #include "inference.hpp"
 
 std::string myTargetDevice;
 std::string conf_modelLayers;
 std::string conf_modelWeights;
-
+const std::string *inputName = NULL;
 
 // Default Constructor
 Network::Network()
@@ -42,8 +42,9 @@ Network::Network()
 // Load the plugin and configure the network 
 int Network::loadNetwork()
 {
+
     // Init plugin
-    InferenceEngine::InferencePlugin plugin = InferenceEngine::PluginDispatcher({""}).getPluginByDevice(myTargetDevice);
+    plugin = InferenceEngine::PluginDispatcher({""}).getPluginByDevice(myTargetDevice);
 
     // Add CPU extensions if necessary
     if (myTargetDevice == "CPU")
@@ -64,9 +65,8 @@ int Network::loadNetwork()
         std::cout << "This application only supports networks with one input\n";
         return -1;
     }
-    auto inputName = inputInfo->begin()->first;
-
-    InferenceEngine::SizeVector inputDims = inputInfo->begin()->second->getDims();
+    inputName = &(inputInfo->begin()->first);
+    inputDims = inputInfo->begin()->second->getDims();
     if (inputDims.size() != 4)
     {
         std::cout << "Not supported input dimensions size, expected 4, got "
@@ -74,18 +74,14 @@ int Network::loadNetwork()
     }
     modelWidth = inputDims[0];
     modelHeight = inputDims[1];
-    const size_t modelChannels = inputDims[2];
+    modelChannels = inputDims[2];
 
-    auto channelSize = modelHeight * modelWidth;
-    auto inputSize = channelSize * modelChannels;
+    channelSize = modelHeight * modelWidth;
+    inputSize = channelSize * modelChannels;
 
     // Set input info
-    (*inputInfo)[inputName]->setInputPrecision(InferenceEngine::Precision::U8);
-    (*inputInfo)[inputName]->setLayout(InferenceEngine::Layout::NCHW);
-    // !NOTE! Alternative
-    // InferenceEngine::InputInfo::Ptr &input = inputInfo.begin()->second;
-    // input->setPrecision(InferenceEngine::Precision::U8);
-    // input->getInputData()->setLayout(Layout::NCHW);
+    (*inputInfo)[*inputName]->setInputPrecision(InferenceEngine::Precision::U8);
+    (*inputInfo)[*inputName]->setLayout(InferenceEngine::Layout::NCHW);
 
     // Get output info
     InferenceEngine::OutputsDataMap outputInfo(networkReader.getNetwork().getOutputsInfo());
@@ -94,11 +90,10 @@ int Network::loadNetwork()
         std::cout << "This application only supports networks with one output\n";
         return -1;
     }
-
-    outputName = outputInfo.begin()->first;
+    
+    outputName = (outputInfo.begin()->first);
     InferenceEngine::DataPtr &output = outputInfo.begin()->second;
-    //const int num_classes = networkReader.getNetwork().getLayerByName(outputName.c_str())->GetParamAsInt("num_classes");
-    InferenceEngine::SizeVector outputDims = output->getDims();
+    outputDims = output->getDims();
     maxProposalCount = outputDims[2]; // SSD detected objects
     objectSize = outputDims[3];       // SSD output per object
 
@@ -107,7 +102,7 @@ int Network::loadNetwork()
     output->setLayout(InferenceEngine::Layout::NCHW);
 
     // Load model into plugin
-    InferenceEngine::ExecutableNetwork network = plugin.LoadNetwork(networkReader.getNetwork(), {});
+    network = plugin.LoadNetwork(networkReader.getNetwork(), {});
 
     // Create inference requests
     currInfReq = network.CreateInferRequestPtr();
@@ -159,7 +154,7 @@ size_t Network::getModelWidth()
 // Fill Input Blob
 void Network::fillInputBlob(cv::Mat img)
 {
-    auto inputBlob = nextInfReq->GetBlob(inputInfo->begin()->first);
+    auto inputBlob = nextInfReq->GetBlob(*inputName);
     cvMatToBlob<uchar>(img, inputBlob);
 }
 
@@ -176,6 +171,7 @@ void Network::inferenceRequest()
 // Get the inference output
 float *Network::inference()
 {
+
     return currInfReq->GetBlob(outputName)->buffer().as<InferenceEngine::PrecisionTrait<InferenceEngine::Precision::FP32>::value_type*>();
 }
 
