@@ -6,22 +6,11 @@
 | Programming Language: | C++                |
 | Time to Complete:     | 45 min             |
 
-![safety-gear-detector](docs/images/safety-gear-detector-image.png)
-**Figure 1:** An application capable of detecting and identifying people in a video and detecting if people are wearing safety-jackets and hard-hats. 
+![safety-gear-detector](docs/images/safety-gear-detector-image.png) 
 
 ## What It Does
 
-This application is one of a series of IoT reference implementations illustrating how to develop a working solution for a particular problem. It demonstrates how to create a smart video IoT solution using Intel® hardware and software tools. This reference implementation monitors human figures passing in front of a camera, runs facial detection and recognition in order to identify the workers, and detects if they are violating safety gear standards.
-
-## How It Works
-
-The application uses the Inference Engine included in the Intel® Distribution of OpenVINO™ toolkit.
-
-Firstly, a trained neural network detects people in the frame and displays a green colored bounding box over them. For each person detected, the application runs a classical Machine Learning algorithm for facial detection and recognition to identify the worker in the video. Finally, for each worker identified, the application determines if they are wearing a safety-jacket and hard-hat. If they are not, an alert is registered with the system. The application detects the safety gear only on the people registered as workers in the database.
-
-![Architectural Diagram](docs/images/arch.png)
-**Figure 2:** Architectural Diagram
-
+This reference implementation is capable of detecting people passing in front of a camera and detecting if the people are wearing safety-jackets and hard-hats. The application counts the number of people who are violating the safety gear standards and the total number of people detected.
 ## Requirements
 
 ### Hardware
@@ -39,74 +28,89 @@ Firstly, a trained neural network detects people in the frame and displays a gre
 
 - OpenCL™ Runtime Package
 
-- Intel® Distribution of OpenVINO™ toolkit 2019 R1 Release
+- Intel® Distribution of OpenVINO™ toolkit 2019 R2 Release
+
+## How It Works
+
+The application uses the Inference Engine included in the Intel® Distribution of OpenVINO™ toolkit.
+
+Firstly, a trained neural network detects people in the frame and displays a green colored bounding box over them. For each person detected, the application determines if they are wearing a safety-jacket and hard-hat. If they are not, an alert is registered with the system.
+
+![Architectural Diagram](docs/images/arch.png)
+**Figure 2:** Architectural Diagram
 
 ## Setup
+### Get the code
+Clone the reference implementation
+```
+sudo apt-get update && sudo apt-get install git
+git clone https://github.com/intel-iot-devkit/safety-gear-detector-cpp.git
+```
 
-### Install Intel® Distribution of OpenVINO™ toolkit
+### Install OpenVINO
 
 Refer to [Install Intel® Distribution of OpenVINO™ toolkit for Linux*](https://software.intel.com/en-us/articles/OpenVINO-Install-Linux) to learn how to install and configure the toolkit.
 
 Install the OpenCL™ Runtime Package to run inference on the GPU, as shown in the instructions below. It is not mandatory for CPU inference.
 
-### Install FFmpeg*
+### Other Dependencies
+**FFmpeg***<br>
+FFmpeg is a free and open-source project capable of recording, converting and streaming digital audio and video in various formats. It can be used to do most of our multimedia tasks quickly and easily say, audio compression, audio/video format conversion, extract images from a video and a lot more.
 
-FFmpeg* is installed separately from the Ubuntu repositories:
 
+## Which model to use
+
+This application uses the [person-detection-retail-0013](https://docs.openvinotoolkit.org/2019_R2/_intel_models_person_detection_retail_0013_description_person_detection_retail_0013.html) Intel® model, that can be downloaded using the **model downloader**. The **model downloader** downloads the __.xml__ and __.bin__ files that will be used by the application.
+
+The application also uses the **worker_safety_mobilenet** model, whose Caffe* model file are provided in the `resources/worker-safety-mobilenet` directory. These need to be passed through the model optimizer to generate the IR (the .xml and .bin files) that will be used by the application.
+
+To download the models and install the dependencies of the application, run the below command in the `safety-gear-detector-cpp-with-worker-safety-model` directory:
 ```
-sudo apt update
-sudo apt install ffmpeg
+./setup.sh
 ```
-
-## Configure the Application
-
-### Download the model
-
-This application uses the __person-detection-retail-0013__ Intel® model, that can be downloaded using the model downloader. The model downloader downloads the .xml and .bin files that will be used by the application.
-
-Steps to download .xml and .bin files:<br>
-- Go to the model_downloader directory using the following command:
-    ```
-    cd /opt/intel/openvino/deployment_tools/tools/model_downloader
-    ```
-- Specify which model to download using the argument __--name__:
-    ```
-    sudo ./downloader.py --name person-detection-retail-0013
-    ```
-- To download the model for FP16, run the following command:
-    ```
-    sudo ./downloader.py --name person-detection-retail-0013-fp16
-    ```
-The files will be downloaded inside the `/opt/intel/openvino/deployment_tools/tools/model_downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt` directory.
 
 ### The Config File
 
-The _resources/conf.txt_ contains the videos that will be used by the application as input. Each line, formatted as `path/to/video`, represents one video and its path location on a local system. 
+The _resources/config.json_ contains the path of video that will be used by the application as input.
 
 For example:
+   ```
+   {
+       "inputs": [
+          {
+              "video":"path_to_video/video1.mp4"
+          }
+       ]
+   }
+   ```
+
+The `path/to/video` is the path to an input video file.
+
+### Which Input Video to use
+
+The application works with any input video. Sample videos are provided [here](https://github.com/intel-iot-devkit/sample-videos/).
+
+For first-use, we recommend using the *Safety_Full_Hat_and_Vest.mp4* video which is present in the `resources/` directory.
+
+For example:
+```
+{
+    "inputs": [
+       {
+           "video":"sample-videos/Safety_Full_Hat_and_Vest.mp4"
+       },
+       {
+           "video":"sample-videos/Safety_Full_Hat_and_Vest.mp4"
+       }
+    ]
+}
 
 ```
-videos/video1.mp4
-```
+If the user wants to use any other video, it can be used by providing the path in the config.json file.
 
-The application can use any number of videos for detection (i.e., the _conf.txt_ file can have any number of lines), but the more videos the application uses in parallel, the more the frame rate of each video scales down. This can be solved by adding more computation power to the machine on which the application is running.
+### Using the Camera Stream instead of video
 
-### Use an Input Video File
-
-The application works with any input video. Find sample videos for object detection [here](https://github.com/intel-iot-devkit/sample-videos/).
-
-For first-use, we recommend using the *Safety_Full_Hat_and_Vest.mp4* video present in the `resources/` directory.
-
-For example `conf.txt`:
-
-```
-../resources/Safety_Full_Hat_and_Vest.mp4
-../resources/Safety_Full_Hat_and_Vest.mp4
-```
-
-### Use a Camera Stream
-
-Replace `path/to/video` with the camera ID in the _resources/conf.txt_, where the ID is taken from the video device (the number X in /dev/videoX).
+Replace `path/to/video` with the camera ID in the config.json file, where the ID is taken from the video device (the number X in /dev/videoX).
 
 On Ubuntu, to list all available video devices use the following command:
 
@@ -114,87 +118,118 @@ On Ubuntu, to list all available video devices use the following command:
 ls /dev/video*
 ```
 
-For example, if the output of above command is **/dev/video0**, then `conf.txt` would be:
+For example, if the output of above command is __/dev/video0__, then config.json would be:
 
 ```
-0
+  {
+     "inputs": [
+        {
+           "video":"0"
+        }
+     ]
+   }
 ```
 
-## Set Up the Environment
+### Setup the Environment
 
-You must configure the environment to use the Intel® Distribution of OpenVINO™ toolkit one time per session by running the following command:
+Configure the environment to use the Intel® Distribution of OpenVINO™ toolkit by exporting environment variables:
 
 ```
 source /opt/intel/openvino/bin/setupvars.sh
 ```
 
-## Build the Application
+__Note__: This command needs to be executed only once in the terminal where the application will be executed. If the terminal is closed, the command needs to be executed again.
 
-To build, go to _safety-gear-detector-cpp_ and run the following commands:
+### Build the Application
 
+To build , go to the `safety-gear-detector-cpp-with-worker-safety-model` and run the following commands:
 ```
 mkdir -p build && cd build
 cmake ..
 make
 ```
-
 ## Run the Application
+
 To see a list of the various options:
 ```
 ./safety-gear-detector -h
 ```
-A user can specify what target device to run on by using the device command-line argument `-d`.
+
+A user can specify what target device to run on by using the device command-line argument `-d`. If no target device is specified the application will run on the CPU by default.
+To run with multiple devices use _-d MULTI:device1,device2_. For example: _-d MULTI:CPU,GPU_
 
 ### Run on the CPU
 
-Although the application runs on the CPU by default, this can also be explicitly specified through the `-d CPU` command-line argument:
+To run the application on CPU, use the following command:
 
 ```
-./safety-gear-detector -d=CPU -c=../resources/conf.txt -db=../resources/workers.txt -m=/opt/intel/openvino/deployment_tools/tools/model_downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt/person-detection-retail-0013.xml
+./safety-gear-detector -d=CPU -m=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt/FP32/person-detection-retail-0013.xml -mh=../resources/worker-safety-mobilenet/FP32/worker_safety_mobilenet.xml
 ```
+**Note:** By default, the application runs on async mode. To run the application on sync mode, use `-f sync` as command-line argument.
 
 ### Run on the Integrated GPU
 
-- To run the application on the integrated Intel® GPU with floating point precision 32 (FP32) model, use the `-d GPU`command-line argument:
+- To run the application on the integrated Intel® GPU with floating point precision 32 (FP32) model:
 
     ```
-    ./safety-gear-detector -d=GPU -c=../resources/conf.txt -db=../resources/workers.txt -m=/opt/intel/openvino/deployment_tools/tools/model_downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt/person-detection-retail-0013.xml
+    ./safety-gear-detector -d=GPU -m=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt/FP32/person-detection-retail-0013.xml -mh=../resources/worker-safety-mobilenet/FP32/worker_safety_mobilenet.xml
     ```
+    **FP32**: FP32 is single-precision floating-point arithmetic uses 32 bits to represent numbers. 8 bits for the magnitude and 23 bits for the precision. For more information, [click here](https://en.wikipedia.org/wiki/Single-precision_floating-point_format)<br>
 
 - To run on the integrated Intel® GPU with floating point precision 16 (FP16) model:
 
     ```
-    ./safety-gear-detector -d=GPU -c=../resources/conf.txt -db=../resources/workers.txt -m=/opt/intel/openvino/deployment_tools/tools/model_downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt/person-detection-retail-0013-fp16.xml
+    ./safety-gear-detector -d=GPU -m=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt/FP16/person-detection-retail-0013.xml -mh=../resources/worker-safety-mobilenet/FP16/worker_safety_mobilenet.xml
     ```
-
+    **FP16**: FP16 is half-precision floating-point arithmetic uses 16 bits. 5 bits for the magnitude and 10 bits for the precision. For more information, [click here](https://en.wikipedia.org/wiki/Half-precision_floating-point_format)
+<!--
 ### Run on the Intel® Neural Compute Stick
 
 To run on the Intel® Neural Compute Stick, use the `-d MYRIAD` command-line argument:
 
 ```
-./safety-gear-detector -d=MYRIAD -c=../resources/conf.txt -db=../resources/workers.txt -m=/opt/intel/openvino/deployment_tools/tools/model_downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt/person-detection-retail-0013-fp16.xml
+./safety-gear-detector -d=MYRIAD -m=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt/FP16/person-detection-retail-0013.xml -mh=../resources/worker-safety-mobilenet/FP16/worker_safety_mobilenet.xml
 ```
 
 **Note:** The Intel® Neural Compute Stick can only run FP16 models. The model that is passed to the application, through the `-m <path_to_model>` command-line argument, must be of data type FP16.
+-->
+### Running on the Intel® Movidius™ VPU
 
-### Running on the HDDL-R
-
-To run on the HDDL-R, use the `-d HETERO:HDDL,CPU` command-line argument:
+To run on the Intel® Movidius™ VPU, use the `-d HDDL` command-line argument:
 ```
-./safety-gear-detector -d=HETERO:HDDL,CPU -c=../resources/conf.txt -db=../resources/workers.txt -m=/opt/intel/openvino/deployment_tools/tools/model_downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt/person-detection-retail-0013-fp16.xml
+./safety-gear-detector -d=HDDL -m=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt/FP16/person-detection-retail-0013.xml -mh=../resources/worker-safety-mobilenet/FP16/worker_safety_mobilenet.xml
 ```
-**Note**: The HDDL-R can only run FP16 models. The model that is passed to the application, through the `-m <path_to_model>` command-line argument, must be of data type FP16.
+**Note**: The Intel® Movidius™ VPU can only run FP16 models. The model that is passed to the application, through the `-m <path_to_model>` command-line argument, must be of data type FP16.
 
+<!-- 
+#### Run the application on FPGA:
+
+Before running the application on the FPGA, program the AOCX (bitstream) file.
+Use the setup_env.sh script from [fpga_support_files.tgz](http://registrationcenter-download.intel.com/akdlm/irc_nas/12954/fpga_support_files.tgz) to set the environment variables.<br>
+
+```
+source /home/<user>/Downloads/fpga_support_files/setup_env.sh
+```
+
+The bitstreams for HDDL-F can be found under the `/opt/intel/openvino/bitstreams/a10_vision_design_bitstreams` folder. To program the bitstream use the below command:
+```
+aocl program acl0 /opt/intel/openvino/bitstreams/a10_vision_design_bitstreams/2019R1_PL1_FP11_RMNet.aocx
+```
+For more information on programming the bitstreams, please refer to https://software.intel.com/en-us/articles/OpenVINO-Install-Linux-FPGA#inpage-nav-11.
+
+To run on the FPGA, use the `-d HETERO:FPGA,CPU` command-line argument:
+```
+./safety-gear-detector -d=HETERO:FPGA,CPU -m=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt/FP16/person-detection-retail-0013.xml -mh=../mobilenet-ssd/FP16/worker_safety_mobilenet.xml
+```
+ -->
 ### Loop the Input Video
 
-By default, the application reads the input videos only once and ends when the videos end.
-
-The reference implementation provides an option to loop the video so that the input videos and application run continuously.
+By default, the application reads the input videos only once and ends when the videos end. The reference implementation provides an option to loop the video so that the input videos and application run continuously.
 
 To loop the sample video, run the application with the `-lp=true` command-line argument:
 
 ```
-./safety-gear-detector -lp=true -d=CPU -c=../resources/conf.txt -db=../resources/workers.txt -m=/opt/intel/openvino/deployment_tools/tools/model_downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt/person-detection-retail-0013.xml
+./safety-gear-detector -lp=true -d=CPU -m=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/Retail/object_detection/pedestrian/rmnet_ssd/0013/dldt/FP32/person-detection-retail-0013.xml -mh=../mobilenet-ssd/FPresources/worker-safety-mobilenet/FP32/worker_safety_mobilenet.xml
 ```
 
 This looping does not affect live camera streams, as camera video streams are continuous and do not end.

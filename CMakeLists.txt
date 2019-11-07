@@ -45,9 +45,10 @@ endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native -O3")
 
-include_directories(include)
-
-add_executable(safety-gear-detector src/main.cxx src/inference.cxx)
+include_directories(application/include)
+include_directories(json/single_include)
+include_directories(/opt/intel/openvino_2019.2.242/deployment_tools/open_model_zoo/demos/common/)
+add_executable(safety-gear-detector application/src/main.cxx application/src/inference.cxx)
 
 add_dependencies(safety-gear-detector IE::ie_cpu_extension)
 
