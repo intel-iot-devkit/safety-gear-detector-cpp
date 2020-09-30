@@ -22,7 +22,7 @@
 */
 
 #include <inference_engine.hpp>
-#include <ext_list.hpp>
+//#include <ext_list.hpp>
 #include <opencv2/imgproc.hpp>
 
 extern std::string myTargetDevice;
@@ -40,7 +40,7 @@ class Network
 
     public:
         int maxProposalCount;
-        InferenceEngine::Core plugin;
+        InferenceEngine::Core ie;
         InferenceEngine::InputsDataMap *inputInfo;
         int channelSize;
         int inputSize;
@@ -51,14 +51,14 @@ class Network
         InferenceEngine::InferRequest::Ptr nextInfReq;
         InferenceEngine::SizeVector inputDims;
         InferenceEngine::SizeVector outputDims;
-        InferenceEngine::CNNNetReader networkReader;
+        //InferenceEngine::CNNNetReader networkReader;
 
         InferenceEngine::ExecutableNetwork network;
         InferenceEngine::StatusCode stsCd;
          InferenceEngine::StatusCode statusCodeOK;
         const std::string *inputName = NULL;
         Network();
-        int loadNetwork(std::string conf_modelLayers,std::string conf_modelWeights, InferenceEngine::Core plugin, std::string myTargetDevice);
+        int loadNetwork(std::string conf_modelLayers,std::string conf_modelWeights, InferenceEngine::Core ie, std::string myTargetDevice);
         template <typename T> void cvMatToBlob (const cv::Mat &img, InferenceEngine::Blob::Ptr &blob);
         size_t getModelHeight();
         size_t getModelWidth();

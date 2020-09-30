@@ -474,11 +474,13 @@ int main(int argc, char const *argv[])
         conf_modelLayers = parser.get<cv::String>("model");
         int pos = conf_modelLayers.rfind(".");
         conf_modelWeights = conf_modelLayers.substr(0, pos) + ".bin";
-        if (myTargetDevice.find("CPU") != std::string::npos)
+        /*
+	if (myTargetDevice.find("CPU") != std::string::npos)
     	{
             net.plugin.AddExtension(std::make_shared<InferenceEngine::Extensions::Cpu::CpuExtensions>(), "CPU");
     	}
-        if (net.loadNetwork(conf_modelLayers, conf_modelWeights, net.plugin, myTargetDevice) != 0)
+	*/
+        if (net.loadNetwork(conf_modelLayers, conf_modelWeights, net.ie, myTargetDevice) != 0)
             return EXIT_FAILURE;
 
     }
@@ -493,7 +495,7 @@ int main(int argc, char const *argv[])
         conf_modelLayers_hat = parser.get<cv::String>("model_hat");
         int pos = conf_modelLayers_hat.rfind(".");
         conf_modelWeights_hat = conf_modelLayers_hat.substr(0, pos) + ".bin";
-        net_hat.loadNetwork(conf_modelLayers_hat, conf_modelWeights_hat, net.plugin, myTargetDevice);
+        net_hat.loadNetwork(conf_modelLayers_hat, conf_modelWeights_hat, net.ie, myTargetDevice);
         SAFETY_MODEL = true;
     }
     else

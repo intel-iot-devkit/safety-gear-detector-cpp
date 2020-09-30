@@ -25,12 +25,12 @@ project (safety-gear-detector)
 set (CMAKE_CXX_STANDARD 11)
 
 if (IE_NOT_FOUND_MESSAGE)
-    find_package(InferenceEngine 1.5 QUIET)
+    find_package(InferenceEngine 2.0 QUIET)
     if (NOT(InferenceEngine_FOUND))
         message(FATAL_ERROR ${IE_NOT_FOUND_MESSAGE})
     endif()
 else()
-    find_package(InferenceEngine 1.5 REQUIRED)
+    find_package(InferenceEngine 2.0 REQUIRED)
 endif()
 
 find_package(OpenCV)
@@ -47,9 +47,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native -O3")
 
 include_directories(application/include)
 include_directories(json/single_include)
-include_directories(/opt/intel/openvino_2019.2.242/deployment_tools/open_model_zoo/demos/common/)
+include_directories(/opt/intel/openvino_2020.3.194/deployment_tools/open_model_zoo/demos/common/)
 add_executable(safety-gear-detector application/src/main.cxx application/src/inference.cxx)
 
-add_dependencies(safety-gear-detector IE::ie_cpu_extension)
+#add_dependencies(safety-gear-detector IE::ie_cpu_extension)
 
-target_link_libraries(safety-gear-detector ${OpenCV_LIBRARIES} IE::ie_cpu_extension ${InferenceEngine_LIBRARIES})
+target_link_libraries(safety-gear-detector ${OpenCV_LIBRARIES} ${InferenceEngine_LIBRARIES})

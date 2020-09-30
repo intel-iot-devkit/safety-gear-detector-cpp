@@ -2,7 +2,7 @@
 
 | Details               |                    |
 | --------------------- | ------------------ |
-| Target OS:            | Ubuntu\* 16.04 LTS |
+| Target OS:            | Ubuntu\* 18.04 LTS |
 | Programming Language: | C++                |
 | Time to Complete:     | 45 min             |
 
@@ -19,7 +19,7 @@ This reference implementation is capable of detecting people passing in front of
 
 ### Software
 
-- [Ubuntu\* 16.04 LTS](http://releases.ubuntu.com/16.04/) <br>
+- [Ubuntu\* 18.04 LTS](http://releases.ubuntu.com/18.04/) <br>
   **Note**: We recommend using a 4.14+ Linux* kernel with this software. Run the following command to determine the kernel version:
 
     ```
@@ -28,7 +28,7 @@ This reference implementation is capable of detecting people passing in front of
 
 - OpenCL™ Runtime Package
 
-- Intel® Distribution of OpenVINO™ toolkit 2019 R3 Release
+- Intel® Distribution of OpenVINO™ toolkit 2020 R3 Release
 
 ## How It Works
 
@@ -60,7 +60,7 @@ FFmpeg is a free and open-source project capable of recording, converting and st
 
 ## Which model to use
 
-This application uses the [person-detection-retail-0013](https://docs.openvinotoolkit.org/2019_R3/_models_intel_person_detection_retail_0013_description_person_detection_retail_0013.html) Intel® model, that can be downloaded using the **model downloader**. The **model downloader** downloads the __.xml__ and __.bin__ files that will be used by the application.
+This application uses the [person-detection-retail-0013](https://docs.openvinotoolkit.org/2020.3/_models_intel_person_detection_retail_0013_description_person_detection_retail_0013.html) Intel® model, that can be downloaded using the **model downloader**. The **model downloader** downloads the __.xml__ and __.bin__ files that will be used by the application.
 
 The application also uses the **worker_safety_mobilenet** model, whose Caffe* model file are provided in the `resources/worker-safety-mobilenet` directory. These need to be passed through the model optimizer to generate the IR (the .xml and .bin files) that will be used by the application.
 
@@ -198,7 +198,7 @@ To run on the Intel® Movidius™ VPU, use the `-d HDDL` command-line argument:
 ./safety-gear-detector -d=HDDL -m=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/intel/person-detection-retail-0013/FP16/person-detection-retail-0013.xml -mh=../resources/worker-safety-mobilenet/FP16/worker_safety_mobilenet.xml
 ```
 **Note**: The Intel® Movidius™ VPU can only run FP16 models. The model that is passed to the application, through the `-m <path_to_model>` command-line argument, must be of data type FP16.
-
+<!--
 ### Run on the Intel® Arria® 10 FPGA
 
 Before running the application on the FPGA, set the environment variables and  program the AOCX (bitstream) file.<br>
@@ -235,7 +235,7 @@ To run the application on the FPGA with floating point precision 16 (FP16), use 
 ```
 ./safety-gear-detector -d=HETERO:FPGA,CPU -m=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/intel/person-detection-retail-0013/FP16/person-detection-retail-0013.xml -mh=../resources/worker-safety-mobilenet/FP16/worker_safety_mobilenet.xml
 ```
-
+-->
 ### Loop the Input Video
 
 By default, the application reads the input videos only once and ends when the videos end. The reference implementation provides an option to loop the video so that the input videos and application run continuously.

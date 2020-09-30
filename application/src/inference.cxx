@@ -37,16 +37,16 @@ Network::Network()
 }
 
 // Load the plugin and configure the network 
-int Network::loadNetwork(std::string conf_modelLayers, std::string conf_modelWeights, InferenceEngine::Core plugin, std::string myTargetDevice)
+int Network::loadNetwork(std::string conf_modelLayers, std::string conf_modelWeights, InferenceEngine::Core ie, std::string myTargetDevice)
 {
     // Configure network
-    InferenceEngine::CNNNetReader networkReader;
-    networkReader.ReadNetwork(conf_modelLayers);
-    networkReader.ReadWeights(conf_modelWeights);
-    networkReader.getNetwork().setBatchSize(conf_batchSize);
-
+    //InferenceEngine::CNNNetReader networkReader;
+    //networkReader.ReadNetwork(conf_modelLayers);
+    //networkReader.ReadWeights(conf_modelWeights);
+    //networkReader.getNetwork().setBatchSize(conf_batchSize);
+    auto cnnNetwork = ie.ReadNetwork(conf_modelLayers);
     // Get input info
-    inputInfo = new InferenceEngine::InputsDataMap(networkReader.getNetwork().getInputsInfo());
+    inputInfo = new InferenceEngine::InputsDataMap(cnnNetwork.getInputsInfo());
     if (inputInfo->size() != 1)
     {
         std::cout << "This application only supports networks with one input\n";
@@ -71,7 +71,7 @@ int Network::loadNetwork(std::string conf_modelLayers, std::string conf_modelWei
     (*inputInfo)[*inputName]->setLayout(InferenceEngine::Layout::NCHW);
 
     // Get output info
-    InferenceEngine::OutputsDataMap outputInfo(networkReader.getNetwork().getOutputsInfo());
+    InferenceEngine::OutputsDataMap outputInfo(cnnNetwork.getOutputsInfo());
     if (outputInfo.size() != 1)
     {
         std::cout << "This application only supports networks with one output\n";
@@ -89,7 +89,7 @@ int Network::loadNetwork(std::string conf_modelLayers, std::string conf_modelWei
     output->setLayout(InferenceEngine::Layout::NCHW);
 
     // Load model into plugin
-    network = plugin.LoadNetwork(networkReader.getNetwork(), myTargetDevice);
+    network = ie.LoadNetwork(cnnNetwork, myTargetDevice);
 
     // Create inference requests
     currInfReq = network.CreateInferRequestPtr();
